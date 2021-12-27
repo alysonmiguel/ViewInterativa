@@ -23,7 +23,7 @@
 
 <script>
 import SockJS from "sockjs-client";
-import Stomp from "stompjs";
+import Stomp from "webstomp-client";
 
 export default {
   name: "Home",
@@ -35,7 +35,7 @@ export default {
   },
   methods: {
     connect: function () {
-      var socket = new SockJS("/connect");
+      var socket = new SockJS("http://localhost:8084/connect");
       this.stompClient = Stomp.over(socket);
       var that = this;
       this.stompClient.connect({}, () => {

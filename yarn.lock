@@ -8597,6 +8597,11 @@ websocket@latest:
     utf-8-validate "^5.0.2"
     yaeti "^0.0.6"
 
+webstomp-client@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/webstomp-client/-/webstomp-client-1.2.6.tgz#57e8a044bac0a08bfc3d0e54d43760c2aeefadab"
+  integrity sha512-9HajO6Ki2ViEGIusLZtjM2lcO2VaQUvtXhLQQ4Cm543RLjfTCEgI3sFaiXts3TvfZgrtY/vI/+qUkm2qWD/NVg==
+
 which-boxed-primitive@^1.0.2:
   version "1.0.2"
   resolved "https://registry.nlark.com/which-boxed-primitive/download/which-boxed-primitive-1.0.2.tgz#13757bc89b209b049fe5d86430e21cf40a89a8e6"
