@@ -1,19 +1,30 @@
 <template>
   <div>
-    <v-app-bar color="#003b8f" dark>
-      <v-toolbar-title> <h3>Geo-IoT</h3> </v-toolbar-title>
+    <!-- <v-app-bar color="#003b8f" dark>
+      <v-toolbar-title> <h3>Georeferenciamento de dispositivos IoT</h3> </v-toolbar-title>
       <v-spacer></v-spacer>
-    </v-app-bar>
+    </v-app-bar> -->
 
     <l-map
       ref="map"
       id="map"
       :zoom="zoom"
+      :options="mapOptions"
       :center="center"
       :minZoom="min"
       style="position: fixed !important; padding-top: 64px"
     >
       <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
+
+      <l-control position="topleft">
+        <!-- <v-img
+          :width="300"
+          :src="require(`../../static/img/logo.jpeg`)"
+        ></v-img> -->
+      </l-control>
+
+      <l-control-zoom :position="zoomPosition" />
+
       <v-marker-cluster>
         <template v-for="(marker, index) in markers">
           <l-marker
@@ -52,19 +63,27 @@
       <v-divider></v-divider>
 
       <template>
-        <v-simple-table>
+        <v-simple-table dark>
           <template v-slot:default>
-            <tbody>
+            <thead>
               <tr>
-                <td>{{ "Ultimo toque" }}</td>
-                <td>{{ "Mon Dec 27 15:40:19 BRT 2021" }}</td>
+                <th class="text-left">Atributo</th>
+                <th class="text-left">Valor</th>
               </tr>
+            </thead>
+            <tbody>
+              <template v-for="(item, key) in items">
+                <tr :key="item" v-if="item.type === 'Property'">
+                  <td>{{ formatInfomationField(key) }}</td>
+                  <td>{{ item.value }}</td>
+                </tr>
+              </template>
             </tbody>
           </template>
         </v-simple-table>
       </template>
 
-      <div class="row">
+      <!-- <div class="row">
         <div class="col">
           <ul class="list-group" style="height: 500px; overflow: scroll">
             <li
@@ -81,7 +100,7 @@
             </li>
           </ul>
         </div>
-      </div>
+      </div> -->
     </v-navigation-drawer>
   </div>
 </template>
@@ -89,22 +108,32 @@
 <script>
 import SockJS from "sockjs-client";
 import Stomp from "webstomp-client";
-import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
+import {
+  LMap,
+  LTileLayer,
+  LMarker,
+  LTooltip,
+  LControlZoom,
+  LControl,
+} from "vue2-leaflet";
 import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
 import "leaflet.markercluster";
 import L from "leaflet";
 import Cookie from "js-cookie";
-import img from "../../static/img/defaultIcon.png";
+import mapa from "../../static/img/mapa.png";
+import mapa2 from "../../static/img/mapa2.png";
+
 
 export default {
   name: "Home",
   components: {
     LMap,
     LTileLayer,
-    // LControlZoom,
+    LControlZoom,
     LMarker,
     "v-marker-cluster": Vue2LeafletMarkerCluster,
     LTooltip,
+    LControl,
   },
   data() {
     return {
@@ -112,11 +141,16 @@ export default {
       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      zoom: 8,
-      center: [-6.20707, -35.34524],
+      zoom: 4,
+      center: [-15.20707, -45.34524],
       min: 0,
       markers: [],
-
+      zoomPosition: "topright",
+      mapOptions: {
+        zoomControl: false,
+        attributionControl: false,
+        measureControl: true,
+      },
       // websocket
       stompClient: null,
       messages: [],
@@ -124,6 +158,7 @@ export default {
       // navigation drawer
       drawer: false,
       group: null,
+      items: null,
     };
   },
   methods: {
@@ -157,18 +192,38 @@ export default {
       console.log("Layer", layer);
       if (layer.modification) {
         return L.icon({
-          iconUrl: img,
+          iconUrl: mapa2,
           iconSize: [38, 42],
         });
       } else {
-        return;
+        return L.icon({
+          iconUrl: mapa,
+          iconSize: [38, 42],
+        });
       }
     },
     closeDrawer(value) {
       this.drawer = value;
     },
     callRightNav(element) {
-      console.log(element);
+      let url =
+        "http://localhost:8080/sgeol-dm/v2/fazenda/find-by-id?entity-id=" +
+        element.id;
+      console.log("URL", url);
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "application-token": Cookie.get("app_access_token"),
+          "user-token": Cookie.get("user_access_token"),
+        },
+      })
+        .then((response) => response.json())
+        .then((res) => {
+          this.items = res;
+        });
+
+      element.modification = false;
       this.drawer = !this.drawer;
     },
     connect: function () {
@@ -198,6 +253,10 @@ export default {
         }
       }
       this.messages.push(messageOutput);
+    },
+    formatInfomationField(str) {
+      let strUpperCaseOne = str[0].toUpperCase() + str.slice(1);
+      return strUpperCaseOne.replace(/_/g, " ");
     },
   },
   mounted() {
