@@ -18,10 +18,12 @@
         <template v-for="(marker, index) in markers">
           <l-marker
             :key="index"
-            :lat-lng="marker.value"
-            :icon="showIcon()"
+            :lat-lng="marker.latlng"
             @click="callRightNav(marker)"
-          />
+            :icon="showIcon(marker)"
+          >
+            <l-tooltip>{{ marker.id }}</l-tooltip>
+          </l-marker>
         </template>
       </v-marker-cluster>
     </l-map>
@@ -87,7 +89,7 @@
 <script>
 import SockJS from "sockjs-client";
 import Stomp from "webstomp-client";
-import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
 import "leaflet.markercluster";
 import L from "leaflet";
@@ -102,6 +104,7 @@ export default {
     // LControlZoom,
     LMarker,
     "v-marker-cluster": Vue2LeafletMarkerCluster,
+    LTooltip,
   },
   data() {
     return {
@@ -113,6 +116,7 @@ export default {
       center: [-6.20707, -35.34524],
       min: 0,
       markers: [],
+
       // websocket
       stompClient: null,
       messages: [],
@@ -135,22 +139,30 @@ export default {
         .then((response) => response.json())
         .then((res) => {
           res.forEach((element) => {
-            console.log("ELE", element);
             if (element.location.value.type === "Point") {
               const marker = L.marker([
                 element.location.value.coordinates[1],
                 element.location.value.coordinates[0],
               ]);
-              this.markers.push({"id": element.id, "value": marker._latlng});
+              this.markers.push({
+                id: element.id,
+                latlng: marker._latlng,
+                modification: false,
+              });
             }
           });
         });
     },
-    showIcon: () => {
-      return L.icon({
-        iconUrl: img,
-        iconSize: [32, 36],
-      });
+    showIcon: (layer) => {
+      console.log("Layer", layer);
+      if (layer.modification) {
+        return L.icon({
+          iconUrl: img,
+          iconSize: [38, 42],
+        });
+      } else {
+        return;
+      }
     },
     closeDrawer(value) {
       this.drawer = value;
@@ -178,11 +190,13 @@ export default {
       }
     },
     handleMessageReceipt: function (messageOutput) {
-      console.log("Mensagem recebida", typeof(messageOutput));
-      var objeto = []
-      objeto.push(messageOutput);
-
-      console.log("Mensagem recebida 22222", objeto);
+      console.log("Mensagem recebida", messageOutput);
+      for (let i = 0; i < this.markers.length; i++) {
+        if (messageOutput === this.markers[i].id) {
+          console.log("OK", this.markers[i]);
+          this.markers[i].modification = true;
+        }
+      }
       this.messages.push(messageOutput);
     },
   },
