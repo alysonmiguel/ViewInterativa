@@ -17,10 +17,37 @@
       <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
 
       <l-control position="topleft">
-        <!-- <v-img
-          :width="300"
-          :src="require(`../../static/img/logo.jpeg`)"
-        ></v-img> -->
+        <v-img
+          :width="120"
+          :src="require(`../../static/img/logo2.png`)"
+        ></v-img>
+      </l-control>
+
+      <l-control position="bottomleft">
+        <v-col>
+          <v-card>
+            <v-list-item>
+                <h2>Legenda</h2>
+            </v-list-item>
+              <template v-for="(item, index) in itemsLegenda">
+                <v-list-item v-if="item.action" :key="item.title">
+                  <v-list-item-action>
+                    <v-icon :color="item.color">{{ item.action }}</v-icon>
+                  </v-list-item-action>
+
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-divider
+                  v-else-if="item.divider"
+                  :key="index"
+                  :inset="inset"
+                ></v-divider>
+              </template>
+          </v-card>
+        </v-col>
       </l-control>
 
       <l-control-zoom :position="zoomPosition" />
@@ -54,7 +81,7 @@
               <v-btn @click="closeDrawer(false)" icon>
                 <v-icon dark left> mdi-arrow-right </v-icon>
               </v-btn>
-              Informações
+               Informações
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -123,7 +150,6 @@ import Cookie from "js-cookie";
 import mapa from "../../static/img/mapa.png";
 import mapa2 from "../../static/img/mapa2.png";
 
-
 export default {
   name: "Home",
   components: {
@@ -159,6 +185,23 @@ export default {
       drawer: false,
       group: null,
       items: null,
+
+      // legenda
+      itemsLegenda: [
+        {
+          action: "mdi-map-marker",
+          title: "Sem alteração recente no dispositivo",
+          color: "#564b4c",
+        },
+        {
+          divider: true,
+        },
+        {
+          action: "mdi-map-marker",
+          title: "Houve alguma alteração no dispositivo",
+          color: "#a100b4",
+        },
+      ],
     };
   },
   methods: {
