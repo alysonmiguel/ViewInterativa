@@ -4,6 +4,7 @@
       <v-toolbar-title> <h3>Geo-IoT</h3> </v-toolbar-title>
       <v-spacer></v-spacer>
     </v-app-bar>
+
     <l-map
       ref="map"
       id="map"
@@ -13,24 +14,21 @@
       style="position: fixed !important; padding-top: 64px"
     >
       <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
-      <!-- <l-control-zoom :position="zoomPosition" /> -->
-      <!-- <template v-for="(marker, index) in markers">
-        <l-marker
-          :key="index"
-          :lat-lng="marker"
-          :icon="showIcon()"
-        />
-      </template> -->
-      <!-- <l-marker
-        :lat-lng="markers"
-        :icon="showIcon()"
-        @click="callRightNav(markers)"
-      /> -->
+      <v-marker-cluster>
+        <template v-for="(marker, index) in markers">
+          <l-marker
+            :key="index"
+            :lat-lng="marker.value"
+            :icon="showIcon()"
+            @click="callRightNav(marker)"
+          />
+        </template>
+      </v-marker-cluster>
     </l-map>
 
     <v-navigation-drawer
       v-model="drawer"
-      :width="900"
+      :width="500"
       fixed
       app
       right
@@ -40,8 +38,8 @@
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title>
-              <v-btn v-on="on" @click="closeDrawer(false)" icon>
-                <v-icon dark left> mdi-arrow-left </v-icon>
+              <v-btn @click="closeDrawer(false)" icon>
+                <v-icon dark left> mdi-arrow-right </v-icon>
               </v-btn>
               Informações
             </v-list-item-title>
@@ -63,6 +61,7 @@
           </template>
         </v-simple-table>
       </template>
+
       <div class="row">
         <div class="col">
           <ul class="list-group" style="height: 500px; overflow: scroll">
@@ -88,7 +87,8 @@
 <script>
 import SockJS from "sockjs-client";
 import Stomp from "webstomp-client";
-import { LMap, LTileLayer } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
 import "leaflet.markercluster";
 import L from "leaflet";
 import Cookie from "js-cookie";
@@ -100,7 +100,8 @@ export default {
     LMap,
     LTileLayer,
     // LControlZoom,
-    // LMarker,
+    LMarker,
+    "v-marker-cluster": Vue2LeafletMarkerCluster,
   },
   data() {
     return {
@@ -111,23 +112,11 @@ export default {
       zoom: 8,
       center: [-6.20707, -35.34524],
       min: 0,
-      zoomPosition: "topright",
-      options: {
-        onEachFeature: (feature, layer) => {
-          layer.on("click", () => {
-            layer.bindTooltip(" Olá :)");
-          });
-
-          this.markers.on("click", function (a) {
-            console.log("marker " + a.layer);
-          });
-        },
-      },
-
-      markers: L.markerClusterGroup(),
+      markers: [],
       // websocket
       stompClient: null,
       messages: [],
+
       // navigation drawer
       drawer: false,
       group: null,
@@ -146,28 +135,28 @@ export default {
         .then((response) => response.json())
         .then((res) => {
           res.forEach((element) => {
+            console.log("ELE", element);
             if (element.location.value.type === "Point") {
               const marker = L.marker([
                 element.location.value.coordinates[1],
                 element.location.value.coordinates[0],
               ]);
-              this.markers.addLayer(marker);
+              this.markers.push({"id": element.id, "value": marker._latlng});
             }
           });
-          this.map.addLayer(this.markers);
         });
     },
     showIcon: () => {
       return L.icon({
         iconUrl: img,
-        iconSize: [38, 42],
+        iconSize: [32, 36],
       });
     },
     closeDrawer(value) {
       this.drawer = value;
     },
-    callRightNav(item) {
-      console.log("status da nav", item);
+    callRightNav(element) {
+      console.log(element);
       this.drawer = !this.drawer;
     },
     connect: function () {
@@ -181,12 +170,6 @@ export default {
         });
       });
     },
-    disconnect: function () {
-      if (this.stompClient != null) {
-        this.stompClient.disconnect();
-      }
-      this.handleMessageReceipt("Disconnected");
-    },
     startTask: function () {
       if (this.stompClient != null) {
         this.stompClient.send("/ws/start");
@@ -194,14 +177,12 @@ export default {
         alert("Please connect first");
       }
     },
-    stopTask: function () {
-      if (this.stompClient != null) {
-        this.stompClient.send("/ws/stop");
-      } else {
-        alert("Please connect first");
-      }
-    },
     handleMessageReceipt: function (messageOutput) {
+      console.log("Mensagem recebida", typeof(messageOutput));
+      var objeto = []
+      objeto.push(messageOutput);
+
+      console.log("Mensagem recebida 22222", objeto);
       this.messages.push(messageOutput);
     },
   },
@@ -211,7 +192,7 @@ export default {
     });
   },
   async created() {
-    // this.connect();
+    this.connect();
     this.getLayer("http://127.0.0.1:8080/sgeol-dm/v2/fazenda");
   },
 };
