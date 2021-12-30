@@ -25,27 +25,27 @@
 
       <l-control position="bottomleft">
         <v-col>
-          <v-card>
-            <v-list-item>
-                <h2>Legenda</h2>
+          <v-card class="p-2">
+            <v-list-item class="justify-content-center">
+              <h4>Legenda</h4>
             </v-list-item>
-              <template v-for="(item, index) in itemsLegenda">
-                <v-list-item v-if="item.action" :key="item.title">
-                  <v-list-item-action>
-                    <v-icon :color="item.color">{{ item.action }}</v-icon>
-                  </v-list-item-action>
+            <template v-for="(item, index) in itemsLegenda">
+              <v-list-item v-if="item.action" :key="item.title">
+                <v-list-item-action>
+                  <v-icon :color="item.color">{{ item.action }}</v-icon>
+                </v-list-item-action>
 
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.title }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
 
-                <v-divider
-                  v-else-if="item.divider"
-                  :key="index"
-                  :inset="inset"
-                ></v-divider>
-              </template>
+              <v-divider
+                v-else-if="item.divider"
+                :key="index"
+                class="m-0"                
+              ></v-divider>
+            </template>
           </v-card>
         </v-col>
       </l-control>
@@ -74,60 +74,56 @@
       right
       hide-overlay
     >
-      <template v-slot:prepend>
-        <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title>
-              <v-btn @click="closeDrawer(false)" icon>
-                <v-icon dark left> mdi-arrow-right </v-icon>
-              </v-btn>
-               Informações
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
-
-      <v-divider></v-divider>
-
-      <template>
-        <v-simple-table dark>
-          <template v-slot:default>
-            <thead>
-              <tr>
-                <th class="text-left">Atributo</th>
-                <th class="text-left">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="(item, key) in items">
-                <tr :key="item" v-if="item.type === 'Property'">
-                  <td>{{ formatInfomationField(key) }}</td>
-                  <td>{{ item.value }}</td>
-                </tr>
-              </template>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </template>
-
-      <!-- <div class="row">
-        <div class="col">
-          <ul class="list-group" style="height: 500px; overflow: scroll">
-            <li
-              class="
-                list-group-item
-                d-flex
-                justify-content-between
-                align-items-center
-              "
-              v-for="(m, idx) in messages"
-              :key="'m-' + idx"
-            >
-              {{ m }}
-            </li>
-          </ul>
-        </div>
-      </div> -->
+      <v-col cols="12">
+        <v-card class="elevation-0">
+          <!-- Voltar -->
+          <v-row>
+            <v-list-item>
+              <v-list-item-avatar>
+                <v-btn @click="closeDrawer(false)" icon>
+                  <v-icon color="#000"> mdi-arrow-right </v-icon>
+                </v-btn>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title
+                  class="font-weight-medium"
+                  v-text="'Voltar'"
+                />
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+          </v-row>
+          <!-- Titulo -->
+          <v-row>
+            <v-list-item class="justify-content-center">
+              <h4>Informações</h4>
+            </v-list-item>
+          </v-row>
+          <!-- Tabela de atributos -->
+          <v-row>
+            <template>
+              <v-simple-table>
+                <template v-slot:default>
+                  <thead>
+                    <tr>
+                      <th class="text-center">Atributo</th>
+                      <th class="text-center">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template v-for="(item, key) in items">
+                      <tr :key="item" v-if="item.type === 'Property'">
+                        <td class="text-center" >{{ formatInfomationField(key) }}</td>
+                        <td class="text-center" >{{ item.value }}</td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </template>
+              </v-simple-table>
+            </template>
+          </v-row>
+        </v-card>
+      </v-col>
     </v-navigation-drawer>
   </div>
 </template>
