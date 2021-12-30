@@ -60,7 +60,7 @@
             @click="callRightNav(marker)"
             :icon="showIcon(marker)"
           >
-            <l-tooltip>{{ marker.id }}</l-tooltip>
+            <l-tooltip>{{ marker.nome.value }}</l-tooltip>
           </l-marker>
         </template>
       </v-marker-cluster>
@@ -96,7 +96,7 @@
           <!-- Titulo -->
           <v-row>
             <v-list-item class="justify-content-center">
-              <h4>Informações</h4>
+              <h4>Informações — {{ this.titulo }}</h4>
             </v-list-item>
           </v-row>
           <!-- Tabela de atributos -->
@@ -112,7 +112,7 @@
                   </thead>
                   <tbody>
                     <template v-for="(item, key) in items">
-                      <tr :key="item" v-if="item.type === 'Property'">
+                      <tr :key="item" v-if="item.type === 'Property' && key !== 'nome' ">
                         <td class="text-center" >{{ formatInfomationField(key) }}</td>
                         <td class="text-center" >{{ item.value }}</td>
                       </tr>
@@ -181,6 +181,7 @@ export default {
       drawer: false,
       group: null,
       items: null,
+      titulo: null,
 
       // legenda
       itemsLegenda: [
@@ -222,6 +223,7 @@ export default {
                 id: element.id,
                 latlng: marker._latlng,
                 modification: false,
+                nome: element.nome,
               });
             }
           });
@@ -264,6 +266,7 @@ export default {
 
       element.modification = false;
       this.drawer = !this.drawer;
+      this.titulo = element.nome.value;
     },
     connect: function () {
       var socket = new SockJS("http://localhost:8084/connect");
